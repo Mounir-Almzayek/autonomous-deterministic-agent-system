@@ -32,7 +32,7 @@
 | 1 – Setup & Input        | ✅ مكتمل   | Intent Parser, Pydantic, FastAPI, POST /v1/parse |
 | 2 – Policy Engine        | ✅ مكتمل   | Rules, roles, scenarios, /v1/policy/check |
 | 3 – Risk Scoring         | ✅ مكتمل   | Risk score, thresholds, /v1/risk/score   |
-| 4 – Sandbox & Validator  | 🔲 لم يبدأ | Dry-run, validation                       |
+| 4 – Sandbox & Validator  | ✅ مكتمل   | Dry-run, validation, mock systems, rollback |
 | 5 – Execution Controller | 🔲 لم يبدأ | Commit/Reject/Escalate                    |
 | 6 – LangGraph            | 🔲 لم يبدأ | Graph, nodes, edges                       |
 | 7 – Logging & Monitoring | 🔲 لم يبدأ | JSON logs, dashboard                      |

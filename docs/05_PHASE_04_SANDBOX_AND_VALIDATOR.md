@@ -8,9 +8,9 @@
 
 ## المهام (Tasks)
 
-- [ ] إنشاء **Execution Sandbox**
-- [ ] اختبار الإجراءات على mock systems
-- [ ] **Validator Node:**
+- [x] إنشاء **Execution Sandbox**
+- [x] اختبار الإجراءات على mock systems
+- [x] **Validator Node:**
   - Consistency checks
   - Hallucination detection
   - Cross-field validation
@@ -41,4 +41,4 @@
 
 ## الحالة
 
-🔲 لم يبدأ
+✅ مكتمل (Sandbox + Validator + mock systems + dry-run + rollback + POST /v1/sandbox/run و /v1/validate)

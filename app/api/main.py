@@ -1,5 +1,5 @@
 """
-FastAPI application entry point - Phase 1, 2 & 3.
+FastAPI application entry point - Phase 1, 2, 3 & 4.
 """
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -7,7 +7,18 @@ from pydantic import BaseModel, Field
 from app.core.intent_parser import parse
 from app.core.policy_engine import evaluate
 from app.core.risk_engine import score as risk_score
-from app.models import IntentParserResult, ParsedIntent, PolicyResult, RiskScoreResult, Role, Scenario
+from app.core.sandbox import run as sandbox_run
+from app.core.validator import validate as validate_result
+from app.models import (
+    IntentParserResult,
+    ParsedIntent,
+    PolicyResult,
+    RiskScoreResult,
+    Role,
+    SandboxResult,
+    Scenario,
+    ValidationResult,
+)
 
 app = FastAPI(
     title="ADAS",
@@ -38,6 +49,21 @@ class RiskScoreRequest(BaseModel):
     intent: ParsedIntent = Field(..., description="Parsed intent to score")
     scenario: Scenario = Field(..., description="Runtime scenario")
     context_override: dict[str, float] | None = Field(None, description="Optional volatility/exposure override for testing")
+
+
+class SandboxRunRequest(BaseModel):
+    """Request body for /v1/sandbox/run (Phase 4)."""
+
+    intent: ParsedIntent = Field(..., description="Parsed intent to run in sandbox")
+    scenario: Scenario = Field(..., description="Runtime scenario")
+    dry_run: bool = Field(True, description="If True, no state changes; applied_ops still recorded for rollback")
+
+
+class ValidateRequest(BaseModel):
+    """Request body for /v1/validate (Phase 4)."""
+
+    intent: ParsedIntent = Field(..., description="Parsed intent")
+    sandbox_result: SandboxResult = Field(..., description="Result from sandbox run to validate")
 
 
 @app.get("/health")
@@ -79,3 +105,21 @@ async def risk_score_endpoint(body: RiskScoreRequest):
         body.scenario,
         context_override=body.context_override,
     )
+
+
+@app.post("/v1/sandbox/run", response_model=SandboxResult)
+async def sandbox_run_endpoint(body: SandboxRunRequest):
+    """
+    Run intent in execution sandbox (Phase 4). Mock systems only; dry_run by default.
+    Returns SandboxResult with output and applied_ops for Validator and Decision Node.
+    """
+    return sandbox_run(body.intent, body.scenario, dry_run=body.dry_run)
+
+
+@app.post("/v1/validate", response_model=ValidationResult)
+async def validate_endpoint(body: ValidateRequest):
+    """
+    Validate intent + sandbox result (Phase 4). Consistency, hallucination, cross-field checks.
+    Returns ValidationResult (pass/fail) for Decision Node.
+    """
+    return validate_result(body.intent, body.sandbox_result)

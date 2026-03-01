@@ -141,3 +141,60 @@ class RiskScoreResult(BaseModel):
     signals: list[str] = Field(default_factory=list, description="Risk factors e.g. high_volatility, execute_action")
     scenario: Scenario = Field(...)
     details: dict[str, Any] = Field(default_factory=dict, description="Exposure, volatility, etc.")
+
+
+# --- Phase 4: Sandbox & Validator ---
+
+
+class SandboxResult(BaseModel):
+    """
+    Result of sandbox execution (dry-run or mock). No real commit until Decision Node commits.
+    applied_ops used for auto rollback if validation fails or on explicit rollback.
+    """
+
+    success: bool = Field(..., description="True if mock execution completed without exception")
+    dry_run: bool = Field(..., description="True if run was dry-run (no state changes)")
+    output: dict[str, Any] = Field(default_factory=dict, description="Simulated output (echo of params + mock ids, etc.)")
+    applied_ops: list[dict[str, Any]] = Field(default_factory=list, description="Ops applied in sandbox for rollback")
+    error_code: str | None = Field(None, max_length=64, description="Set when success=False")
+    error_message: str | None = Field(None, max_length=2000, description="Set when success=False")
+
+
+class ValidationCheck(BaseModel):
+    """Single validation step result (consistency, hallucination, cross-field)."""
+
+    name: str = Field(..., max_length=128)
+    passed: bool = Field(...)
+    message: str = Field("", max_length=500)
+
+
+class ValidationPass(BaseModel):
+    """All validation checks passed; output is consistent and hallucination-free."""
+
+    checks_passed: list[str] = Field(default_factory=list, description="Names of checks that passed")
+    checks: list[ValidationCheck] = Field(default_factory=list)
+
+
+class ValidationFail(BaseModel):
+    """One or more validation checks failed."""
+
+    failed_check: str = Field(..., max_length=128)
+    reason: str = Field(..., max_length=1000)
+    checks: list[ValidationCheck] = Field(default_factory=list, description="All checks with passed=False for failures")
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class ValidationResult(BaseModel):
+    """Result of validator node: pass or fail with check details. Used by Decision Node."""
+
+    passed: bool = Field(...)
+    pass_detail: ValidationPass | None = None
+    fail_detail: ValidationFail | None = None
+
+    @classmethod
+    def ok(cls, pass_detail: ValidationPass) -> ValidationResult:
+        return cls(passed=True, pass_detail=pass_detail, fail_detail=None)
+
+    @classmethod
+    def fail(cls, fail_detail: ValidationFail) -> ValidationResult:
+        return cls(passed=False, pass_detail=None, fail_detail=fail_detail)

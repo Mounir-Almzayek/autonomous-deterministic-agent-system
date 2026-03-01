@@ -6,5 +6,8 @@
     "codex-project-manager.milestoneCellsMigrationCompleted": true,
     "codex-project-manager.paratextReorderMigrationCompleted": true,
     "codex-project-manager.globalReferencesMigrationCompleted": true,
-    "codex-project-manager.cellIdsToUuidMigrationCompleted": true
+    "codex-project-manager.cellIdsToUuidMigrationCompleted": true,
+    "workbench.editor.enablePreviewFromCodeNavigation": false,
+    "workbench.editor.enablePreviewFromQuickOpen": false,
+    "workbench.editor.enablePreview": false
 }
