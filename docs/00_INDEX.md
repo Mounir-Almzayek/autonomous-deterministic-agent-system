@@ -34,7 +34,7 @@
 | 3 – Risk Scoring         | ✅ مكتمل   | Risk score, thresholds, /v1/risk/score   |
 | 4 – Sandbox & Validator  | ✅ مكتمل   | Dry-run, validation, mock systems, rollback |
 | 5 – Execution Controller | ✅ مكتمل   | Commit/Reject/Escalate, dual confirmation, /v1/decide |
-| 6 – LangGraph            | 🔲 لم يبدأ | Graph, nodes, edges                       |
+| 6 – LangGraph            | ✅ مكتمل   | Graph, nodes, conditional edges, retry, /v1/run |
 | 7 – Logging & Monitoring | 🔲 لم يبدأ | JSON logs, dashboard                      |
 | 8 – Testing & Docs       | 🔲 لم يبدأ | Unit, integration, adversarial            |
 

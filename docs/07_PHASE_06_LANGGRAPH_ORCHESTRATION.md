@@ -8,11 +8,11 @@
 
 ## المهام (Tasks)
 
-- [ ] Node لكل module (Intent, Policy, Risk, Validator, Execution, Scenario Manager)
-- [ ] **Edge conditions:**
+- [x] Node لكل module (Intent, Policy, Risk, Validator, Execution, Scenario Manager)
+- [x] **Edge conditions:**
   - success → next node
   - fail → retry / escalation node
-- [ ] Multi-agent readiness: إضافة agents جديدة بسهولة
+- [x] Multi-agent readiness: إضافة agents جديدة بسهولة
 
 ---
 
@@ -33,11 +33,12 @@
 
 ## الملفات ذات الصلة
 
-- `app/core/` (جميع الـ nodes)
-- Graph definition (ملف أو module مخصص للـ LangGraph)
+- `app/core/graph.py` — StateGraph، تعريف الـ nodes والـ conditional edges والـ retry loop
+- `app/core/scenario_manager.py` — Scenario Manager node (resolve scenario من إشارات الـ risk)
+- `app/core/` — بقية الـ nodes (intent_parser، policy_engine، risk_engine، sandbox، validator، execution_controller)
 
 ---
 
 ## الحالة
 
-🔲 لم يبدأ
+✅ مكتمل (StateGraph، nodes، conditional edges، retry loop، scenario_manager، POST /v1/run)

@@ -1,5 +1,5 @@
 """
-FastAPI application entry point - Phase 1, 2, 3, 4 & 5.
+FastAPI application entry point - Phase 1, 2, 3, 4, 5 & 6.
 """
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -81,6 +81,16 @@ class DecideRequest(BaseModel):
     correlation_id: str | None = Field(None, description="Trace id for audit")
 
 
+class GraphRunRequest(BaseModel):
+    """Request body for /v1/run (Phase 6 - LangGraph pipeline)."""
+
+    raw_llm_output: str = Field(..., description="Raw LLM output to parse and run through the full pipeline")
+    role: Role = Field(Role.AGENT, description="Actor role for policy")
+    scenario: Scenario = Field(Scenario.NORMAL, description="Initial scenario (can switch in scenario_manager)")
+    correlation_id: str | None = Field(None, description="Trace id for audit")
+    max_retries: int = Field(2, ge=0, le=10, description="Max validator retry loop count")
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "ADAS"}
@@ -156,3 +166,24 @@ async def decide_endpoint(body: DecideRequest):
         dual_confirmation_risk_threshold=body.dual_confirmation_risk_threshold,
         correlation_id=body.correlation_id,
     )
+
+
+@app.post("/v1/run")
+async def graph_run_endpoint(body: GraphRunRequest):
+    """
+    Run full ADAS pipeline via LangGraph (Phase 6). Intent -> Policy -> Risk -> Scenario -> Sandbox -> Validator -> Decision.
+    Returns final state with decision; traceable execution.
+    """
+    from app.core.graph import get_graph
+
+    initial: dict[str, object] = {
+        "raw_llm_output": body.raw_llm_output,
+        "role": body.role.value,
+        "scenario": body.scenario.value,
+        "correlation_id": body.correlation_id,
+        "retry_count": 0,
+        "max_retries": body.max_retries,
+    }
+    graph = get_graph()
+    final = graph.invoke(initial)
+    return final
