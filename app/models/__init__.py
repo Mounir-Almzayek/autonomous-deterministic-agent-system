@@ -1,6 +1,8 @@
 # Pydantic schemas & JSON validation
 from app.models.schemas import (
     ActionType,
+    DecisionOutcome,
+    DecisionResult,
     IntentParseError,
     IntentParserResult,
     ParsedIntent,
@@ -19,6 +21,8 @@ from app.models.schemas import (
 
 __all__ = [
     "ActionType",
+    "DecisionOutcome",
+    "DecisionResult",
     "IntentParseError",
     "IntentParserResult",
     "ParsedIntent",

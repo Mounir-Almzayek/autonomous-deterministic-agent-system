@@ -1,15 +1,17 @@
 """
-FastAPI application entry point - Phase 1, 2, 3 & 4.
+FastAPI application entry point - Phase 1, 2, 3, 4 & 5.
 """
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from app.core.execution_controller import decide
 from app.core.intent_parser import parse
 from app.core.policy_engine import evaluate
 from app.core.risk_engine import score as risk_score
 from app.core.sandbox import run as sandbox_run
 from app.core.validator import validate as validate_result
 from app.models import (
+    DecisionResult,
     IntentParserResult,
     ParsedIntent,
     PolicyResult,
@@ -64,6 +66,19 @@ class ValidateRequest(BaseModel):
 
     intent: ParsedIntent = Field(..., description="Parsed intent")
     sandbox_result: SandboxResult = Field(..., description="Result from sandbox run to validate")
+
+
+class DecideRequest(BaseModel):
+    """Request body for /v1/decide (Phase 5 - Decision Node)."""
+
+    policy_result: PolicyResult = Field(..., description="Result from policy check")
+    risk_result: RiskScoreResult = Field(..., description="Result from risk scoring")
+    sandbox_result: SandboxResult = Field(..., description="Result from sandbox run")
+    validation_result: ValidationResult = Field(..., description="Result from validator")
+    confidence: float | None = Field(None, ge=0.0, le=1.0, description="Optional confidence score; below threshold → reject")
+    confidence_threshold: float | None = Field(None, ge=0.0, le=1.0, description="Override config; 0 = disabled")
+    dual_confirmation_risk_threshold: float | None = Field(None, ge=0.0, le=1.0, description="Override; risk above this → requires_dual_confirmation")
+    correlation_id: str | None = Field(None, description="Trace id for audit")
 
 
 @app.get("/health")
@@ -123,3 +138,21 @@ async def validate_endpoint(body: ValidateRequest):
     Returns ValidationResult (pass/fail) for Decision Node.
     """
     return validate_result(body.intent, body.sandbox_result)
+
+
+@app.post("/v1/decide", response_model=DecisionResult)
+async def decide_endpoint(body: DecideRequest):
+    """
+    Decision Node (Phase 5). Commit / Reject / Escalate from policy, risk, sandbox, validation.
+    Returns DecisionResult (outcome, reason, requires_dual_confirmation, suggested_retry). Logged for audit.
+    """
+    return decide(
+        body.policy_result,
+        body.risk_result,
+        body.sandbox_result,
+        body.validation_result,
+        confidence=body.confidence,
+        confidence_threshold=body.confidence_threshold,
+        dual_confirmation_risk_threshold=body.dual_confirmation_risk_threshold,
+        correlation_id=body.correlation_id,
+    )

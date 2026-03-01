@@ -198,3 +198,34 @@ class ValidationResult(BaseModel):
     @classmethod
     def fail(cls, fail_detail: ValidationFail) -> ValidationResult:
         return cls(passed=False, pass_detail=None, fail_detail=fail_detail)
+
+
+# --- Phase 5: Execution Controller (Decision Node) ---
+
+
+class DecisionOutcome(str, Enum):
+    """Final decision: commit (execute), reject, or escalate to human/external."""
+
+    COMMIT = "commit"
+    REJECT = "reject"
+    ESCALATE = "escalate"
+
+
+class DecisionResult(BaseModel):
+    """
+    Result of Decision Node. Deterministic: driven by policy, risk, validation, sandbox.
+    Used by logging/audit and downstream (e.g. real commit gate).
+    """
+
+    outcome: DecisionOutcome = Field(..., description="commit | reject | escalate")
+    reason: str = Field(..., max_length=1000, description="Human-readable reason for audit")
+    requires_dual_confirmation: bool = Field(
+        False,
+        description="True when risk is high: commit only after second confirmation",
+    )
+    suggested_retry: bool = Field(
+        False,
+        description="True when rejection may be transient; orchestrator can retry",
+    )
+    correlation_id: str | None = Field(None, description="Trace id for audit")
+    details: dict[str, Any] = Field(default_factory=dict, description="Extra context (e.g. failed_check, risk_score)")

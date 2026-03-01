@@ -8,9 +8,9 @@
 
 ## المهام (Tasks)
 
-- [ ] **Decision Node:** Commit / Reject / Escalate
-- [ ] Edge-case handling
-- [ ] Logging لكل قرار
+- [x] **Decision Node:** Commit / Reject / Escalate
+- [x] Edge-case handling
+- [x] Logging لكل قرار
 
 ---
 
@@ -36,4 +36,4 @@
 
 ## الحالة
 
-🔲 لم يبدأ
+✅ مكتمل (Decision Node + dual confirmation + confidence threshold + suggested_retry + rollback on reject + POST /v1/decide)
