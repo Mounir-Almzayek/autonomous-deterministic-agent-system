@@ -35,7 +35,7 @@
 | 4 – Sandbox & Validator  | ✅ مكتمل   | Dry-run, validation, mock systems, rollback |
 | 5 – Execution Controller | ✅ مكتمل   | Commit/Reject/Escalate, dual confirmation, /v1/decide |
 | 6 – LangGraph            | ✅ مكتمل   | Graph, nodes, conditional edges, retry, /v1/run |
-| 7 – Logging & Monitoring | 🔲 لم يبدأ | JSON logs, dashboard                      |
+| 7 – Logging & Monitoring | ✅ مكتمل   | JSON logs, metrics, Streamlit dashboard  |
 | 8 – Testing & Docs       | 🔲 لم يبدأ | Unit, integration, adversarial            |
 
 

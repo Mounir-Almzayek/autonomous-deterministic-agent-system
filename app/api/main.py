@@ -1,6 +1,8 @@
 """
-FastAPI application entry point - Phase 1, 2, 3, 4, 5 & 6.
+FastAPI application entry point - Phase 1, 2, 3, 4, 5, 6 & 7.
 """
+import os
+
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
@@ -27,6 +29,14 @@ app = FastAPI(
     description="Autonomous Deterministic Agent System - Safe, Resilient, Multi-Scenario AI Agent Execution Engine",
     version="0.1.0",
 )
+
+
+@app.on_event("startup")
+def _startup():
+    """Optional: enable JSON structured logging when ADAS_JSON_LOGS=1."""
+    if os.getenv("ADAS_JSON_LOGS", "").strip() in ("1", "true", "yes"):
+        from app.logging import setup_structured_logging
+        setup_structured_logging()
 
 
 class ParseRequest(BaseModel):
@@ -168,13 +178,28 @@ async def decide_endpoint(body: DecideRequest):
     )
 
 
+@app.get("/v1/metrics")
+async def get_metrics():
+    """
+    Metrics for dashboard (Phase 7). Recent runs and aggregate summary.
+    """
+    from app.logging.metrics import get_metrics_store
+
+    store = get_metrics_store()
+    return {
+        "recent_runs": store.get_recent_runs(limit=50),
+        "summary": store.get_metrics_summary(),
+    }
+
+
 @app.post("/v1/run")
 async def graph_run_endpoint(body: GraphRunRequest):
     """
     Run full ADAS pipeline via LangGraph (Phase 6). Intent -> Policy -> Risk -> Scenario -> Sandbox -> Validator -> Decision.
-    Returns final state with decision; traceable execution.
+    Returns final state with decision; traceable execution. Records metrics for dashboard (Phase 7).
     """
     from app.core.graph import get_graph
+    from app.logging.audit import record_run_complete
 
     initial: dict[str, object] = {
         "raw_llm_output": body.raw_llm_output,
@@ -186,4 +211,5 @@ async def graph_run_endpoint(body: GraphRunRequest):
     }
     graph = get_graph()
     final = graph.invoke(initial)
+    record_run_complete(body.correlation_id, final)
     return final

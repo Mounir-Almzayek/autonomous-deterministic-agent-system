@@ -6,9 +6,11 @@ Conditional branching, retry loop on validation fail, scenario switching.
 from __future__ import annotations
 
 import logging
-from typing import Any, Literal, TypedDict
+import time
+from typing import Any, Callable, Literal, TypedDict
 
 from app.config.execution_config import MAX_RETRIES_HINT
+from app.logging.structured_logger import log_step as _log_step
 from app.core.execution_controller import decide
 from app.core.intent_parser import parse
 from app.core.policy_engine import evaluate
@@ -49,6 +51,7 @@ class ADASState(TypedDict, total=False):
     decision: dict[str, Any]
     retry_count: int
     max_retries: int
+    _node_latencies_ms: dict[str, float]
 
 
 def _role(s: ADASState) -> Role:
@@ -57,6 +60,30 @@ def _role(s: ADASState) -> Role:
 
 def _scenario(s: ADASState) -> Scenario:
     return Scenario(s.get("scenario", "normal"))
+
+
+def _wrap_node(name: str, fn: Callable[[ADASState], dict[str, Any]]) -> Callable[[ADASState], dict[str, Any]]:
+    """Wrap a node to record latency and structured audit log."""
+
+    def wrapped(state: ADASState) -> dict[str, Any]:
+        start = time.perf_counter()
+        out = fn(state)
+        elapsed_ms = (time.perf_counter() - start) * 1000
+        merged = dict(state.get("_node_latencies_ms") or {})
+        merged[name] = round(elapsed_ms, 2)
+        out["_node_latencies_ms"] = merged
+        _log_step(
+            logger,
+            name,
+            state.get("correlation_id"),
+            f"node_finished {name}",
+            latency_ms=elapsed_ms,
+            outcome=out.get("outcome"),
+            extra={k: v for k, v in (out or {}).items() if k != "_node_latencies_ms"},
+        )
+        return out
+
+    return wrapped
 
 
 # --- Graph nodes (each receives state, returns partial state update) ---
@@ -234,17 +261,17 @@ def build_graph():
 
     builder = StateGraph(ADASState)
 
-    builder.add_node("intent_parser", node_intent_parser)
-    builder.add_node("policy", node_policy)
-    builder.add_node("risk", node_risk)
-    builder.add_node("scenario_manager", node_scenario_manager)
-    builder.add_node("sandbox", node_sandbox)
-    builder.add_node("validator", node_validator)
-    builder.add_node("decision", node_decision)
-    builder.add_node("decision_after_intent_fail", node_decision_after_intent_fail)
-    builder.add_node("decision_after_policy_deny", node_decision_after_policy_deny)
-    builder.add_node("decision_after_risk_over", node_decision_after_risk_over)
-    builder.add_node("increment_retry", node_increment_retry)
+    builder.add_node("intent_parser", _wrap_node("intent_parser", node_intent_parser))
+    builder.add_node("policy", _wrap_node("policy", node_policy))
+    builder.add_node("risk", _wrap_node("risk", node_risk))
+    builder.add_node("scenario_manager", _wrap_node("scenario_manager", node_scenario_manager))
+    builder.add_node("sandbox", _wrap_node("sandbox", node_sandbox))
+    builder.add_node("validator", _wrap_node("validator", node_validator))
+    builder.add_node("decision", _wrap_node("decision", node_decision))
+    builder.add_node("decision_after_intent_fail", _wrap_node("decision_after_intent_fail", node_decision_after_intent_fail))
+    builder.add_node("decision_after_policy_deny", _wrap_node("decision_after_policy_deny", node_decision_after_policy_deny))
+    builder.add_node("decision_after_risk_over", _wrap_node("decision_after_risk_over", node_decision_after_risk_over))
+    builder.add_node("increment_retry", _wrap_node("increment_retry", node_increment_retry))
 
     builder.add_edge(START, "intent_parser")
     builder.add_conditional_edges("intent_parser", route_after_intent, {"policy": "policy", "decision": "decision_after_intent_fail"})

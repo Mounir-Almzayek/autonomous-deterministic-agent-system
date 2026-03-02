@@ -8,10 +8,10 @@
 
 ## المهام (Tasks)
 
-- [ ] **Structured logging (JSON)** لكل خطوة
-- [ ] **Metrics collection:** latency, risk score, success/failure
-- [ ] **Dashboard:**
-  - Streamlit / React
+- [x] **Structured logging (JSON)** لكل خطوة
+- [x] **Metrics collection:** latency, risk score, success/failure
+- [x] **Dashboard:**
+  - Streamlit
   - Graphical view لكل execution path
   - Risk & performance charts
 
@@ -33,11 +33,14 @@
 
 ## الملفات ذات الصلة
 
-- `app/logging/`
-- Dashboard app (Streamlit أو frontend منفصل)
+- `app/logging/structured_logger.py` — JSON formatter و log_step
+- `app/logging/metrics.py` — MetricsStore (recent runs, summary)
+- `app/logging/audit.py` — record_run_complete للـ pipeline
+- `dashboard/app.py` — Streamlit dashboard (GET /v1/metrics + charts)
+- `GET /v1/metrics` — API للمقاييس والعرض على الـ dashboard
 
 ---
 
 ## الحالة
 
-🔲 لم يبدأ
+✅ مكتمل (JSON logging، metrics، audit، Streamlit dashboard، GET /v1/metrics)
