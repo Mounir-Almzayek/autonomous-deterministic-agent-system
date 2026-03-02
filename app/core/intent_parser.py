@@ -17,11 +17,13 @@ PREVIEW_LENGTH = 500
 
 
 def _safe_preview(raw: str) -> str:
-    """Return a safe, truncated preview for logs/errors."""
+    """Return a safe, truncated preview for logs/errors (max PREVIEW_LENGTH chars)."""
     if not raw or not isinstance(raw, str):
         return ""
-    s = raw.strip()[:PREVIEW_LENGTH]
-    return s + ("..." if len(raw) > PREVIEW_LENGTH else "")
+    r = raw.strip()
+    if len(r) <= PREVIEW_LENGTH:
+        return r
+    return r[: PREVIEW_LENGTH - 3] + "..."
 
 
 def parse(raw: str, correlation_id: str | None = None) -> IntentParserResult:

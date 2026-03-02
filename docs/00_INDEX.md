@@ -36,7 +36,7 @@
 | 5 – Execution Controller | ✅ مكتمل   | Commit/Reject/Escalate, dual confirmation, /v1/decide |
 | 6 – LangGraph            | ✅ مكتمل   | Graph, nodes, conditional edges, retry, /v1/run |
 | 7 – Logging & Monitoring | ✅ مكتمل   | JSON logs, metrics, Streamlit dashboard  |
-| 8 – Testing & Docs       | 🔲 لم يبدأ | Unit, integration, adversarial            |
+| 8 – Testing & Docs       | ✅ مكتمل   | Unit, integration, adversarial, coverage, README, API.md |
 
 
 **رموز الحالة:** 🔲 لم يبدأ | 🟡 قيد التنفيذ | ✅ مكتمل
