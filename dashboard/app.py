@@ -2,15 +2,16 @@
 ADAS Monitoring Dashboard (Phase 7).
 Streamlit app: real-time runs, execution path view, risk & performance charts, scenario comparison.
 Run: streamlit run dashboard/app.py
-Requires ADAS API to be running (default http://localhost:8000) for GET /v1/metrics.
+Requires ADAS API to be running. Set ADAS_API_URL in Docker (e.g. http://api:8000) or use sidebar.
 """
 from __future__ import annotations
 
+import os
 import streamlit as st
 
 st.set_page_config(page_title="ADAS Monitoring", page_icon="📊", layout="wide")
 
-DEFAULT_API_BASE = "http://localhost:8000"
+DEFAULT_API_BASE = os.getenv("ADAS_API_URL", "http://localhost:8000")
 
 
 def fetch_metrics(api_base: str):

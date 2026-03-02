@@ -1,0 +1,44 @@
+# Git and IDE
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+*.swp
+*.swo
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+env
+.env.local
+.env.*.local
+
+# Testing and coverage (not needed in image)
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.mypy_cache
+ruff_cache
+
+# Docs and project metadata (optional: remove if you want docs in image)
+docs
+*.md
+!README.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Misc
+*.log
+.project
+files
+*.sqlite

@@ -1,0 +1,8 @@
+# Production runtime only (smaller image, faster build).
+# Full stack including dashboard deps for single Dockerfile.
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+langgraph>=0.2.0
+streamlit>=1.28.0
+pandas>=2.0.0

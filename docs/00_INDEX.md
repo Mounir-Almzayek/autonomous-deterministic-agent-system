@@ -57,8 +57,9 @@ ADAS/
 │   ├── logging/             # Structured logs, audit
 │   └── config/              # Configuration
 ├── tests/                   # Unit & integration tests
-├── docker/                  # Dockerfiles, compose
 ├── docs/                    # هذا المجلد – المراحل والتوثيق
+├── Dockerfile               # Multi-stage API image
+├── docker-compose.yml       # API + Dashboard
 └── README.md
 ```
 

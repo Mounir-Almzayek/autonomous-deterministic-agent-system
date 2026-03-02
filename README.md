@@ -75,6 +75,21 @@ streamlit run dashboard/app.py
 
 ---
 
+## Docker
+
+```bash
+# Build and run API + Dashboard
+docker compose up --build
+
+# API: http://localhost:8000  |  Dashboard: http://localhost:8501
+```
+
+- **Image:** Multi-stage `Dockerfile`, non-root user, healthcheck. Runtime deps only (`requirements-docker.txt`).
+- **Compose:** `api` (uvicorn) + `dashboard` (Streamlit). Dashboard uses `ADAS_API_URL=http://api:8000` to reach the API.
+- **Faster rebuilds:** Build with BuildKit so pip cache is reused: `DOCKER_BUILDKIT=1 docker compose build`.
+
+---
+
 ## Testing
 
 ```bash
@@ -129,6 +144,9 @@ ADAS/
 ├── dashboard/         # Streamlit monitoring app
 ├── tests/             # Unit, integration, adversarial, stress
 ├── docs/              # Architecture, phases, API
+├── Dockerfile        # Multi-stage API image (slim, non-root)
+├── docker-compose.yml # API + Dashboard
+├── requirements-docker.txt  # Runtime deps only for image
 ├── pytest.ini
 ├── requirements.txt
 └── README.md
